@@ -1,7 +1,9 @@
 from flask import Blueprint, request
-from db import db
+from init import db
 from datetime import date
 from models.card import Card, CardSchema
+from controllers.auth_controller import authorize
+from flask_jwt_extended import jwt_required
 
 cards_bp = Blueprint('cards', __name__,url_prefix='/cards')
 
@@ -28,7 +30,10 @@ def get_one_cards(id):
 
 
 @cards_bp.route('/<int:id>/', methods=['DELETE'])
+@jwt_required()
 def delete_one_cards(id):
+    authorize()
+
     stmt = db.select(Card).filter_by(id=id)
     card = db.session.scalar(stmt)
     if card:
@@ -40,6 +45,7 @@ def delete_one_cards(id):
 
 
 @cards_bp.route('/<int:id>/', methods=['PUT', 'PATCH'])
+@jwt_required()
 def update_one_cards(id):
     stmt = db.select(Card).filter_by(id=id)
     card = db.session.scalar(stmt)
@@ -55,6 +61,7 @@ def update_one_cards(id):
 
 
 @cards_bp.route('/', methods=['POST'])
+@jwt_required()
 def create_card():
         # Create a new Card model instance
         card = Card(
